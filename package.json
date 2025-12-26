@@ -1,0 +1,39 @@
+{
+    "name": "invoice-memory-layer",
+    "version": "1.0.0",
+    "description": "A memory-driven learning layer for invoice automation that stores reusable insights from past invoices and applies them to improve automation rates",
+    "main": "dist/index.js",
+    "type": "module",
+    "scripts": {
+        "build": "tsc",
+        "start": "tsx src/index.ts",
+        "demo": "tsx demo/runner.ts",
+        "test": "tsx demo/runner.ts",
+        "clean": "rm -rf dist data/memory.db"
+    },
+    "keywords": [
+        "invoice",
+        "automation",
+        "memory",
+        "learning",
+        "AI",
+        "document-processing"
+    ],
+    "author": "Anish",
+    "license": "MIT",
+    "dependencies": {
+        "chalk": "^4.1.2",
+        "sql.js": "^1.13.0",
+        "typescript": "^5.9.3",
+        "uuid": "^13.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^25.0.3",
+        "@types/sql.js": "^1.4.9",
+        "@types/uuid": "^10.0.0",
+        "tsx": "^4.21.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
