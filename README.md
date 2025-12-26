@@ -1,5 +1,6 @@
 
-# Invoice Memory Layer System <img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/f39bc7b2-5eaf-4c1e-bcd5-e4b2a1fc53f3"/> 
+# <img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/76caaced-0e81-405d-b077-10ad2c7a5f82" align="center" /> <br> Invoice Memory Layer System 
+
 
 A memory-driven learning layer for invoice automation that stores reusable insights from past invoices and applies them to improve automation rates. Built with TypeScript and SQLite for persistence.
 
