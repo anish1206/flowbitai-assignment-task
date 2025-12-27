@@ -6,9 +6,9 @@
     "type": "module",
     "scripts": {
         "build": "tsc",
-        "start": "tsx src/index.ts",
-        "demo": "tsx demo/runner.ts",
-        "test": "tsx demo/runner.ts",
+        "start": "node --import tsx src/index.ts",
+        "demo": "node --import tsx demo/runner.ts",
+        "test": "node --import tsx demo/runner.ts",
         "clean": "rm -rf dist data/memory.db"
     },
     "keywords": [

@@ -19,6 +19,15 @@ This **Memory Layer** sits on top of extraction and:
 ## 🏗️ Architecture
 <img width="1381" height="705" alt="image" src="https://github.com/user-attachments/assets/e005be5a-6954-48cc-badc-97629f5d2880" />
 
+## 🧠 Core Logic Pipeline
+
+Every invoice processed by the system follows a four-stage autonomous cycle:
+
+1. **Recall**: The system searches the SQLite database for the vendor's history, retrieving known field mappings, VAT behaviors, and past corrections.
+2. **Apply**: It attempts to "heal" the invoice using recalled memories (e.g., mapping "Leistungsdatum" to `serviceDate` or recalculating totals if the vendor uses VAT-inclusive pricing).
+3. **Decide**: Based on the number of corrections and their historical success rates, a confidence score is generated. It determines if the invoice can be auto-accepted or if it needs human eyes.
+4. **Learn**: Once a human provides feedback or corrections, the system updates its notebook. It reinforces successful patterns and weakens failed ones through a reinforcement learning heuristic.
+
 
 ## 📦 Memory Types
 

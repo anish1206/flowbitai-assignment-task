@@ -209,16 +209,16 @@ function buildReasoning(
 
     // Decision summary
     if (requiresHumanReview) {
-        parts.push(`⚠️ REQUIRES HUMAN REVIEW (Overall confidence: ${(confidence * 100).toFixed(1)}%)`);
+        parts.push(`[REQUIRES REVIEW] Overall confidence: ${(confidence * 100).toFixed(1)}%`);
     } else {
-        parts.push(`✅ AUTO-PROCESSED (Overall confidence: ${(confidence * 100).toFixed(1)}%)`);
+        parts.push(`[AUTO-PROCESSED] Overall confidence: ${(confidence * 100).toFixed(1)}%`);
     }
 
     // Memory usage summary
     if (memories.vendorMemory) {
-        parts.push(`\n📚 Memory: Using ${memories.vendorMemory.usageCount} prior interactions with "${memories.vendorMemory.vendorName}"`);
+        parts.push(`\nMemory: Using ${memories.vendorMemory.usageCount} prior interactions with "${memories.vendorMemory.vendorName}"`);
     } else {
-        parts.push(`\n📚 Memory: No prior history for this vendor`);
+        parts.push(`\nMemory: No prior history for this vendor`);
     }
 
     // Corrections summary
@@ -226,22 +226,22 @@ function buildReasoning(
     const proposed = corrections.filter(c => !c.autoApplied);
 
     if (autoApplied.length > 0) {
-        parts.push(`\n✨ Auto-applied ${autoApplied.length} correction(s):`);
+        parts.push(`\nAuto-applied ${autoApplied.length} correction(s):`);
         autoApplied.forEach(c => {
             parts.push(`   - ${c.field}: ${c.reasoning}`);
         });
     }
 
     if (proposed.length > 0) {
-        parts.push(`\n🔍 Proposed ${proposed.length} correction(s) for review:`);
+        parts.push(`\nProposed ${proposed.length} correction(s) for review:`);
         proposed.forEach(c => {
-            parts.push(`   - ${c.field}: ${JSON.stringify(c.originalValue)} → ${JSON.stringify(c.proposedValue)}`);
+            parts.push(`   - ${c.field}: ${JSON.stringify(c.originalValue)} -> ${JSON.stringify(c.proposedValue)}`);
         });
     }
 
     // Escalation reasons
     if (escalationReasons.length > 0) {
-        parts.push(`\n⚡ Escalation reasons:`);
+        parts.push(`\nEscalation reasons:`);
         escalationReasons.forEach(reason => {
             parts.push(`   - ${reason}`);
         });
@@ -249,7 +249,7 @@ function buildReasoning(
 
     // Duplicate warning
     if (memories.potentialDuplicate) {
-        parts.push(`\n🚨 DUPLICATE WARNING: This invoice may be a duplicate of a previously processed invoice`);
+        parts.push(`\n[DUPLICATE WARNING] This invoice may be a duplicate of a previously processed invoice`);
     }
 
     return parts.join('');

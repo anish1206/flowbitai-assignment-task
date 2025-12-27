@@ -15,8 +15,8 @@ import { ProcessingResult } from '../src/types/output.js';
 // DEMO RUNNER - Invoice Memory Layer System
 // ==========================================
 
-const DIVIDER = '═'.repeat(80);
-const SECTION = '─'.repeat(60);
+const DIVIDER = '='.repeat(80);
+const SECTION = '-'.repeat(80);
 
 async function loadData() {
     const dataDir = path.join(process.cwd(), 'data');
@@ -38,7 +38,7 @@ async function loadData() {
 
 function printHeader(text: string) {
     console.log('\n' + chalk.cyan(DIVIDER));
-    console.log(chalk.cyan.bold(`  ${text}`));
+    console.log(chalk.cyan.bold(`  ${text.toUpperCase()}`));
     console.log(chalk.cyan(DIVIDER));
 }
 
@@ -49,7 +49,7 @@ function printSubHeader(text: string) {
 }
 
 function printResult(result: ProcessingResult) {
-    console.log('\n' + chalk.white.bold('📄 Normalized Invoice:'));
+    console.log('\n' + chalk.white.bold('Normalized Invoice:'));
     console.log(chalk.gray(JSON.stringify({
         invoiceId: result.normalizedInvoice.invoiceId,
         vendor: result.normalizedInvoice.vendor,
@@ -62,26 +62,30 @@ function printResult(result: ProcessingResult) {
     }, null, 2)));
 
     if (result.proposedCorrections.length > 0) {
-        console.log('\n' + chalk.white.bold('🔧 Proposed Corrections:'));
+        console.log('\n' + chalk.white.bold('Proposed Corrections:'));
         result.proposedCorrections.forEach(c => {
-            const status = c.autoApplied ? chalk.green('✓ AUTO') : chalk.yellow('⏳ PENDING');
-            console.log(`  ${status} ${chalk.white(c.field)}: ${chalk.red(JSON.stringify(c.originalValue))} → ${chalk.green(JSON.stringify(c.proposedValue))}`);
-            console.log(`         ${chalk.gray(c.reasoning)}`);
+            const status = c.autoApplied ? chalk.green('[AUTO-APPLIED]') : chalk.yellow('[PENDING REVIEW]');
+            console.log(`  ${status} ${chalk.white(c.field)}`);
+            console.log(`    ${chalk.gray('From:')} ${chalk.red(JSON.stringify(c.originalValue))}`);
+            console.log(`    ${chalk.gray('To:')}   ${chalk.green(JSON.stringify(c.proposedValue))}`);
+            console.log(`    ${chalk.gray('Confidence:')} ${chalk.white((c.confidence * 100).toFixed(1) + '%')}`);
+            console.log(`    ${chalk.gray('Reason:')} ${chalk.white(c.reasoning.substring(0, 120))}...`);
         });
     }
 
-    console.log('\n' + chalk.white.bold('🎯 Decision:'));
+    console.log('\n' + chalk.white.bold('Decision:'));
     if (result.requiresHumanReview) {
-        console.log(chalk.red.bold('  ⚠️  REQUIRES HUMAN REVIEW'));
+        console.log(chalk.red.bold('  Status: REQUIRES HUMAN REVIEW'));
     } else {
-        console.log(chalk.green.bold('  ✅ AUTO-PROCESSED'));
+        console.log(chalk.green.bold('  Status: AUTO-PROCESSED'));
     }
-    console.log(chalk.white(`  Confidence: ${(result.confidenceScore * 100).toFixed(1)}%`));
+    console.log(chalk.white(`  Overall Confidence: ${(result.confidenceScore * 100).toFixed(1)}%`));
 
-    console.log('\n' + chalk.white.bold('💭 Reasoning:'));
-    console.log(chalk.gray(result.reasoning));
+    console.log('\n' + chalk.white.bold('Reasoning Summary:'));
+    const lines = result.reasoning.split('\n');
+    lines.forEach(line => console.log(chalk.gray('  ' + line)));
 
-    console.log('\n' + chalk.white.bold('📋 Audit Trail:'));
+    console.log('\n' + chalk.white.bold('Audit Trail:'));
     result.auditTrail.forEach(entry => {
         console.log(chalk.gray(`  [${entry.step.toUpperCase()}] ${entry.timestamp}`));
         console.log(chalk.gray(`    ${entry.details.substring(0, 100)}${entry.details.length > 100 ? '...' : ''}`));
@@ -91,7 +95,7 @@ function printResult(result: ProcessingResult) {
 async function printMemoryState() {
     const memories = await getAllMemories();
 
-    console.log('\n' + chalk.magenta.bold('🧠 CURRENT MEMORY STATE'));
+    console.log('\n' + chalk.magenta.bold('CURRENT MEMORY STATE'));
     console.log(chalk.magenta(SECTION));
 
     console.log(chalk.white.bold('\nVendor Memories:'));
@@ -99,29 +103,30 @@ async function printMemoryState() {
         console.log(chalk.gray('  (No vendor memories yet)'));
     } else {
         memories.vendorMemories.forEach(vm => {
-            console.log(chalk.cyan(`\n  📦 ${vm.vendorName}`));
-            console.log(chalk.gray(`     Confidence: ${(vm.confidence * 100).toFixed(1)}% | Usage: ${vm.usageCount} times`));
+            console.log(chalk.cyan(`\n  Vendor: ${vm.vendorName}`));
+            console.log(chalk.gray(`    Confidence: ${(vm.confidence * 100).toFixed(1)}%`));
+            console.log(chalk.gray(`    Usage Count: ${vm.usageCount} times`));
 
             if (vm.fieldMappings.length > 0) {
-                console.log(chalk.gray('     Field Mappings:'));
+                console.log(chalk.gray('    Field Mappings:'));
                 vm.fieldMappings.forEach(fm => {
-                    console.log(chalk.gray(`       - "${fm.sourceLabel}" → ${fm.targetField} (${(fm.confidence * 100).toFixed(1)}%)`));
+                    console.log(chalk.gray(`      - "${fm.sourceLabel}" -> ${fm.targetField} (${(fm.confidence * 100).toFixed(1)}%)`));
                 });
             }
 
             if (vm.taxBehavior) {
-                console.log(chalk.gray(`     Tax: ${vm.taxBehavior.isInclusive ? 'VAT Inclusive' : 'VAT Exclusive'} (${(vm.taxBehavior.confidence * 100).toFixed(1)}%)`));
+                console.log(chalk.gray(`    Tax Behavior: ${vm.taxBehavior.isInclusive ? 'VAT Inclusive' : 'VAT Exclusive'} (${(vm.taxBehavior.confidence * 100).toFixed(1)}%)`));
             }
 
             if (vm.skuMappings.length > 0) {
-                console.log(chalk.gray('     SKU Mappings:'));
+                console.log(chalk.gray('    SKU Mappings:'));
                 vm.skuMappings.forEach(sm => {
-                    console.log(chalk.gray(`       - "${sm.description}" → ${sm.sku} (${(sm.confidence * 100).toFixed(1)}%)`));
+                    console.log(chalk.gray(`      - "${sm.description}" -> ${sm.sku} (${(sm.confidence * 100).toFixed(1)}%)`));
                 });
             }
 
             if (vm.paymentTerms) {
-                console.log(chalk.gray(`     Payment Terms: ${vm.paymentTerms}`));
+                console.log(chalk.gray(`    Payment Terms: ${vm.paymentTerms}`));
             }
         });
     }
@@ -131,7 +136,7 @@ async function printMemoryState() {
         console.log(chalk.gray('  (No correction memories yet)'));
     } else {
         memories.correctionMemories.forEach(cm => {
-            console.log(chalk.gray(`  - ${cm.vendorName}/${cm.fieldName}: ${cm.pattern} → ${cm.correctionType} (${(cm.confidence * 100).toFixed(1)}%)`));
+            console.log(chalk.gray(`  - ${cm.vendorName}/${cm.fieldName}: ${cm.pattern} -> ${cm.correctionType} (${(cm.confidence * 100).toFixed(1)}%)`));
         });
     }
 
@@ -154,18 +159,18 @@ async function printMemoryState() {
 
 async function runDemo() {
     console.log(chalk.cyan.bold(`
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║           🧠 INVOICE MEMORY LAYER SYSTEM - INTERACTIVE DEMO 🧠              ║
-║                                                                              ║
-║   Demonstrating learning over time through the Recall → Apply → Decide →    ║
-║   Learn pipeline with confidence tracking and audit trails.                 ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+${DIVIDER}
+INVOICE MEMORY LAYER SYSTEM - DEMONSTRATION
+${DIVIDER}
+
+Demonstrating the Recall -> Apply -> Decide -> Learn pipeline
+with confidence tracking and complete audit trails.
+
+${DIVIDER}
   `));
 
     // Reset memories for fresh demo
-    console.log(chalk.gray('\n🔄 Resetting memory database for fresh demo...\n'));
+    console.log(chalk.gray('\nResetting memory database for clean demonstration...\n'));
     resetAllMemories();
 
     const { invoices, purchaseOrders, humanCorrections } = await loadData();
@@ -173,9 +178,9 @@ async function runDemo() {
     // ==========================================
     // PHASE 1: Process first invoice (no memory)
     // ==========================================
-    printHeader('PHASE 1: FIRST ENCOUNTER - No Prior Learning');
-    console.log(chalk.gray('Processing INV-A-001 from Supplier GmbH for the first time...'));
-    console.log(chalk.gray('The system has NO memory of this vendor yet.\n'));
+    printHeader('PHASE 1: First Encounter (No Prior Learning)');
+    console.log(chalk.gray('Processing: INV-A-001 from Supplier GmbH'));
+    console.log(chalk.gray('Context: First time processing this vendor - no memory exists yet\n'));
 
     const firstInvoice = invoices.find(i => i.invoiceId === 'INV-A-001')!;
     const firstResult = await processInvoice(firstInvoice, { purchaseOrders });
@@ -186,9 +191,9 @@ async function runDemo() {
     // ==========================================
     // PHASE 2: Apply human corrections
     // ==========================================
-    printHeader('PHASE 2: HUMAN TRAINING - Applying Corrections');
-    console.log(chalk.gray('Human reviewer provides corrections for INV-A-001...'));
-    console.log(chalk.gray('The system will LEARN from these corrections.\n'));
+    printHeader('PHASE 2: Human Training (Applying Corrections)');
+    console.log(chalk.gray('A human reviewer provides corrections for INV-A-001'));
+    console.log(chalk.gray('The system will LEARN from these corrections\n'));
 
     const firstCorrection = humanCorrections.find(c => c.invoiceId === 'INV-A-001')!;
     console.log(chalk.white('Human Correction Applied:'));
@@ -196,7 +201,7 @@ async function runDemo() {
 
     const memoryUpdates = await applyHumanCorrection(firstInvoice, firstCorrection);
 
-    console.log(chalk.green.bold('\n✨ Memory Updates:'));
+    console.log(chalk.green.bold('\nMemory Updates:'));
     memoryUpdates.forEach(update => {
         console.log(chalk.green(`  [${update.action.toUpperCase()}] ${update.type}: ${update.details}`));
     });
@@ -206,35 +211,36 @@ async function runDemo() {
     // ==========================================
     // PHASE 3: Process second invoice (with memory)
     // ==========================================
-    printHeader('PHASE 3: SMART PROCESSING - Using Learned Memory');
-    console.log(chalk.gray('Processing INV-A-002 from Supplier GmbH...'));
-    console.log(chalk.gray('The system NOW has memory of "Leistungsdatum" = serviceDate!\n'));
+    printHeader('PHASE 3: Smart Processing (Using Learned Memory)');
+    console.log(chalk.gray('Processing: INV-A-002 from Supplier GmbH'));
+    console.log(chalk.gray('Context: System now has memory of "Leistungsdatum" = serviceDate pattern\n'));
 
     const secondInvoice = invoices.find(i => i.invoiceId === 'INV-A-002')!;
     const secondResult = await processInvoice(secondInvoice, { purchaseOrders });
     printResult(secondResult);
 
-    console.log(chalk.green.bold('\n🎉 LEARNING DEMONSTRATED:'));
+    console.log(chalk.green.bold('\nLEARNING DEMONSTRATED:'));
     if (secondResult.normalizedInvoice.serviceDate) {
-        console.log(chalk.green('  ✓ serviceDate was automatically extracted using learned pattern!'));
+        console.log(chalk.green('  SUCCESS: serviceDate was automatically extracted using learned pattern!'));
+        console.log(chalk.green('  The system remembered the "Leistungsdatum" mapping from the previous correction.'));
     }
 
     // ==========================================
     // PHASE 4: VAT Inclusive Learning (Parts AG)
     // ==========================================
-    printHeader('PHASE 4: LEARNING VAT BEHAVIOR - Parts AG');
+    printHeader('PHASE 4: Learning VAT Behavior (Parts AG)');
 
-    printSubHeader('4a: First Parts AG invoice (no memory)');
+    printSubHeader('Step 4a: First Parts AG Invoice (No Memory)');
     const partsInvoice1 = invoices.find(i => i.invoiceId === 'INV-B-001')!;
     const partsResult1 = await processInvoice(partsInvoice1, { purchaseOrders });
     printResult(partsResult1);
 
-    printSubHeader('4b: Applying VAT correction');
+    printSubHeader('Step 4b: Applying VAT Correction');
     const partsCorrection = humanCorrections.find(c => c.invoiceId === 'INV-B-001')!;
     console.log(chalk.gray(JSON.stringify(partsCorrection, null, 2)));
     await applyHumanCorrection(partsInvoice1, partsCorrection);
 
-    printSubHeader('4c: Second Parts AG invoice (with VAT memory)');
+    printSubHeader('Step 4c: Second Parts AG Invoice (With VAT Memory)');
     const partsInvoice2 = invoices.find(i => i.invoiceId === 'INV-B-002')!;
     const partsResult2 = await processInvoice(partsInvoice2, { purchaseOrders });
     printResult(partsResult2);
@@ -242,37 +248,36 @@ async function runDemo() {
     // ==========================================
     // PHASE 5: Currency Recovery
     // ==========================================
-    printHeader('PHASE 5: CURRENCY RECOVERY - Parts AG');
+    printHeader('PHASE 5: Currency Recovery (Parts AG)');
 
     const currencyCorrection = humanCorrections.find(c => c.invoiceId === 'INV-B-003')!;
     await applyHumanCorrection(
         invoices.find(i => i.invoiceId === 'INV-B-003')!,
         currencyCorrection
     );
-    console.log(chalk.green('  ✓ Learned to recover currency from rawText for Parts AG'));
+    console.log(chalk.green('  SUCCESS: Learned to recover currency from rawText for Parts AG'));
 
     // ==========================================
     // PHASE 6: Freight & Co - Skonto and SKU Mapping
     // ==========================================
-    printHeader('PHASE 6: FREIGHT & CO - Payment Terms & SKU Learning');
+    printHeader('PHASE 6: Freight & Co (Payment Terms & SKU Learning)');
 
-    printSubHeader('6a: Learning Skonto terms');
+    printSubHeader('Step 6a: Learning Skonto Terms');
     const freightInvoice1 = invoices.find(i => i.invoiceId === 'INV-C-001')!;
-    const freightResult1 = await processInvoice(freightInvoice1, { purchaseOrders });
-    console.log(chalk.gray('Processing FC-1001...'));
+    await processInvoice(freightInvoice1, { purchaseOrders });
 
     const skontoCorrection = humanCorrections.find(c => c.invoiceId === 'INV-C-001')!;
     await applyHumanCorrection(freightInvoice1, skontoCorrection);
-    console.log(chalk.green('  ✓ Learned Skonto payment terms'));
+    console.log(chalk.green('  SUCCESS: Learned Skonto payment terms'));
 
-    printSubHeader('6b: Learning SKU mapping (Seefracht → FREIGHT)');
+    printSubHeader('Step 6b: Learning SKU Mapping (Seefracht -> FREIGHT)');
     const freightInvoice2 = invoices.find(i => i.invoiceId === 'INV-C-002')!;
 
     const skuCorrection = humanCorrections.find(c => c.invoiceId === 'INV-C-002')!;
     await applyHumanCorrection(freightInvoice2, skuCorrection);
-    console.log(chalk.green('  ✓ Learned SKU mapping: "seefracht / shipping" → FREIGHT'));
+    console.log(chalk.green('  SUCCESS: Learned SKU mapping "seefracht / shipping" -> FREIGHT'));
 
-    printSubHeader('6c: Processing new Freight invoice (with memory)');
+    printSubHeader('Step 6c: Processing New Freight Invoice (With Memory)');
     const freightInvoice3 = invoices.find(i => i.invoiceId === 'INV-C-003')!;
     const freightResult3 = await processInvoice(freightInvoice3, { purchaseOrders });
     printResult(freightResult3);
@@ -280,8 +285,8 @@ async function runDemo() {
     // ==========================================
     // PHASE 7: Duplicate Detection
     // ==========================================
-    printHeader('PHASE 7: DUPLICATE DETECTION');
-    console.log(chalk.gray('Processing INV-A-004 which has SAME invoice number as INV-A-003...\n'));
+    printHeader('PHASE 7: Duplicate Detection');
+    console.log(chalk.gray('Processing: INV-A-004 (same invoice number as INV-A-003)\n'));
 
     // First process INV-A-003
     const invoice3 = invoices.find(i => i.invoiceId === 'INV-A-003')!;
@@ -297,38 +302,38 @@ async function runDemo() {
     printResult(duplicateResult);
 
     if (duplicateResult.requiresHumanReview) {
-        console.log(chalk.red.bold('\n🚨 DUPLICATE DETECTED - Memory updates blocked to prevent contamination!'));
+        console.log(chalk.red.bold('\nDUPLICATE ALERT: Memory updates blocked to prevent contamination!'));
     }
 
     // ==========================================
     // FINAL: Complete Memory State
     // ==========================================
-    printHeader('FINAL: COMPLETE MEMORY STATE');
+    printHeader('FINAL: Complete Memory State');
     await printMemoryState();
 
     // ==========================================
     // OUTPUT: Full JSON Results
     // ==========================================
     printHeader('SAMPLE OUTPUT - JSON Format (INV-A-002)');
-    console.log(chalk.gray('\nThis is the exact output contract format required:\n'));
+    console.log(chalk.gray('\nThis is the exact output contract format required by the assignment:\n'));
     console.log(JSON.stringify(secondResult, null, 2));
 
     console.log(chalk.cyan.bold(`
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║                        🎉 DEMO COMPLETE! 🎉                                  ║
-║                                                                              ║
-║   The system demonstrated:                                                   ║
-║   ✓ Learning field mappings (Leistungsdatum → serviceDate)                  ║
-║   ✓ Learning VAT behavior (inclusive pricing)                               ║
-║   ✓ Currency recovery from rawText                                          ║
-║   ✓ SKU mapping from descriptions                                           ║
-║   ✓ Payment terms detection (Skonto)                                        ║
-║   ✓ Duplicate detection and prevention                                      ║
-║   ✓ Confidence evolution over time                                          ║
-║   ✓ Complete audit trails                                                   ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+${DIVIDER}
+DEMONSTRATION COMPLETE
+${DIVIDER}
+
+Summary of Demonstrated Capabilities:
+  [DONE] Learning field mappings (Leistungsdatum -> serviceDate)
+  [DONE] Learning VAT behavior (inclusive pricing detection)
+  [DONE] Currency recovery from rawText
+  [DONE] SKU mapping from descriptions
+  [DONE] Payment terms detection (Skonto)
+  [DONE] Duplicate detection and prevention
+  [DONE] Confidence evolution over time
+  [DONE] Complete audit trails
+
+${DIVIDER}
   `));
 
     shutdown();
