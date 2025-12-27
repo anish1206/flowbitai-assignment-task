@@ -179,13 +179,7 @@ For each invoice, the system outputs:
 | Freight & Co descriptions | Map to SKU FREIGHT | ✅ |
 | INV-A-004 + INV-B-004 | Flag as duplicates | ✅ |
 
-## 🧪 Testing
 
-Run the demo script which serves as an integration test:
-
-```bash
-npm run demo
-```
 
 The demo walks through all scenarios and validates expected behaviors.
 
@@ -239,9 +233,6 @@ const updates = await applyHumanCorrection(invoice, correction);
 console.log(updates);  // What the system learned
 ```
 
-## 🎥 Demo Video
-
-[Link to demo video showing the system learning over time]
 
 ## 🔧 Technology Stack
 
